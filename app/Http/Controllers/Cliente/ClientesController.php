@@ -24,7 +24,7 @@ class ClientesController extends Controller
     /**
      * Store a newly created and update resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request): \Illuminate\Http\JsonResponse
     {
         try {
             $this->validate($request, [

@@ -16,7 +16,7 @@ class EnderecoController extends Controller
     /**
      * Store a newly created or update resource in storage.
      */
-    public function store(Request $request): \Illuminate\Http\JsonResponse
+    public function store(Request $request): ClienteEnderecos
     {
         try {
             $this->validate($request, [
@@ -44,6 +44,4 @@ class EnderecoController extends Controller
             throw new ValidationException($th->validator, $th->response, $th->errorBag, $th->redirectTo);
         }
     }
-
-  
 }
