@@ -89,8 +89,8 @@
             <div class="modal-content">
                 <form novalidate>
                     @csrf
-                    <input type="hidden" name="id">
-                    <input type="hidden" name="endereco.id">
+                    <input type="hidden" class="reset" name="id">
+                    <input type="hidden" class="reset" name="endereco.id">
                     <div class="modal-header">
                         <h1 class="modal-title fs-5" id="modal-label">Modal title</h1>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -220,7 +220,7 @@
 
                 const form = document.querySelector('#created-cliente form');
                 form.reset();
-                form.querySelectorAll('input[type="hidden"]').forEach(v => v.value = '');
+                form.querySelectorAll('.reset').forEach(v => v.value = '');
                 form.classList.remove('was-validated');
 
             });
