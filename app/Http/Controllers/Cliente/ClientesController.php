@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Cliente;
 use App\Http\Controllers\Controller;
 use App\Models\Clientes;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class ClientesController extends Controller
@@ -13,10 +12,18 @@ class ClientesController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function fetch()
+    public function fetch(Request $request)
     {
 
-        $clientes = Clientes::with('enderecos')->paginate(10);
+        $pages = $request->per_page ?? $request->pages ?? 10;
+
+        $default_search = $request->has('search') && $request->has('type') && $request->type !== '3';
+        $uf_search = $request->has('search') && $request->has('type') && $request->type === '3';
+
+        $clientes = Clientes::when($default_search, fn ($query) => $query->where('razao_social', 'like', "%{$request->search}%")->orWhere('cpf_cnpj', 'like', "%{$request->search}%"))
+            ->when($uf_search, fn ($query) => $query->whereHas('enderecos', fn ($query) => $query->whereHas('cidade', fn ($query) => $query->where('uf', trim(strtoupper($request->search)))->orWhere('nome', 'like', "%{$request->search}%"))))
+            ->with('enderecos')
+            ->paginate($pages);
 
         return response()->json($clientes, 200);
     }
@@ -29,7 +36,6 @@ class ClientesController extends Controller
         try {
             $this->validate($request, [
                 'razao_social'  => ['required'],
-                //TODO: Criar validação de CPF e CNPJ
                 'cpf_cnpj'      => ['required', /* 'cpf_cnpj' */],
                 'email'         => ['email', 'nullable'],
                 //'telefone' => 'required',

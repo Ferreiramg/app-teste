@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
+    <title>Simple CRUD test</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 </head>
@@ -12,7 +12,7 @@
 <body>
     <nav class="navbar navbar-dark bg-dark fixed-top">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">Offcanvas</a>
+            <a class="navbar-brand" href="#">App Clientes</a>
             <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" id="darkModeToggle">
                 <label class="form-check-label" for="darkModeToggle">Dark Mode</label>
@@ -34,11 +34,30 @@
                 <div class="col-12">
                     <div class="card shadow">
                         <div class="card-header d-flex align-items-end justify-content-between">
-                            <h5 class="card-title">Card title</h5>
+                            <h5 class="card-title">Clientes</h5>
                             <button class="btn btn-primary" type="button" data-bs-toggle="modal"
                                 data-bs-target="#created-cliente">
                                 Novo Cliente
                             </button>
+                        </div>
+                        <div class="card-header d-flex align-items-end justify-content-between">
+
+                            <select class="form-select" name="tipo" aria-label="Default select example">
+                                <option>Buscar por:</option>
+                                <option value="1" selected>Razão Social</option>
+                                <option value="2">CPF/CNPJ</option>
+                                <option value="3">Cidade/UF</option>
+                            </select>
+
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Pesquisar" id="search"
+                                    aria-label="Pesquisar" aria-describedby="button-addon2">
+                                <button title="Pesquisar" class="btn btn-outline-secondary" onclick="searchData(event)"
+                                    type="button" id="button-addon2">🔎</button>
+                                <button title="Limpar Pesquisa" class="btn btn-outline-secondary" data-clear="true"
+                                    onclick="searchData(event)" type="button" id="button-addon2">❌</button>
+                            </div>
+
                         </div>
                         <div class="card-body p-0">
                             <table id="table-clientes" class="table table-striped table-hover">
@@ -232,17 +251,21 @@
                     document.documentElement.removeAttribute('data-bs-theme');
                 }
             });
-            
+
             //init request
-            handlerGetData();
+            handlerGetData({
+                page: 1
+            });
 
         });
 
-        const handlerGetData = async (page = 1) => {
+        const handlerGetData = async (params) => {
 
-            state.page = page;
+            state.page = params.page;
 
-            const url = `/clientes?page=${page}`;
+            const queryString = new URLSearchParams(params);
+
+            const url = `/clientes?${queryString.toString()}`;
 
             const tbody = document.querySelector('#table-clientes tbody');
 
@@ -296,11 +319,40 @@
                 Pagination.handlerClick = async (e) => {
                     e.preventDefault();
                     const _page = e.target.dataset.page;
-                    await handlerGetData(_page);
+                    await handlerGetData({
+                        page: _page
+                    });
                 };
 
                 Pagination.linkRender(data);
             }
+        };
+        const searchData = async (event) => {
+            event.preventDefault();
+
+            const clear = event.target.dataset?.clear;//clear filters
+
+            const search = document.querySelector('#search').value;
+
+            const tipo = document.querySelector('[name="tipo"]').value;
+
+            const loader = event.target.loader();
+
+            if(clear){
+                document.querySelector('#search').value = '';
+            }
+
+            const params = clear === undefined ? {
+                per_page: 100,
+                type: tipo,
+                search
+            } : {
+                page: state.page
+            };
+
+            loader.show();
+            await handlerGetData(params);
+            loader.hide();
         };
 
         const handlerEdit = (event) => {
@@ -383,7 +435,9 @@
                     if (response.errors) {
                         throw new ServeSideError(response.errors);
                     }
-                    handlerGetData(state.page);
+                    handlerGetData({
+                        page: state.page
+                    });
                     showToast('Cliente salvo com sucesso!', 'success');
                     _modal.hide();
 

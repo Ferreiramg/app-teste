@@ -26,13 +26,13 @@ class ClienteEnderecos extends Model
         return $this->belongsTo(Cidades::class);
     }
 
-    public function getCityAttribute()
+    public function getCityAttribute(): string
     {
-       return $this->cidade->nome ?? '';
+        return $this->cidade->nome ?? '';
     }
 
-    public function getStateAttribute()
+    public function getStateAttribute(): string
     {
-       return $this->cidade->uf ?? '';
+        return $this->cidade->uf ?? '';
     }
 }
